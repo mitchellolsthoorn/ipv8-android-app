@@ -1,0 +1,153 @@
+<resources>
+    <string name="app_name">Wallet</string>
+    <string name="app_website">www.tribler.org</string>
+    <string name="app_feedback_url">https://forum.tribler.org</string>
+    <string name="service_url">http://127.0.0.1</string>
+    <string name="service_port_number">8085</string>
+    <string name="service_auth_token"></string>
+
+    <string name="vlc_package_name">org.videolan.vlc</string>
+    <string name="vlc_asset">VLC-Android-2.0.6-ARMv7.apk</string>
+    <string name="dialog_install_vlc">To watch videos you need a video player, like VLC that comes with Tribler. Do you want to install VLC now?</string>
+
+    <string name="title_app">Application</string>
+    <string name="title_create_content">Create new content</string>
+    <string name="title_channel_preview">Preview of</string>
+
+    <string name="title_activity_main">@string/app_name</string>
+    <string name="title_activity_beam">@string/action_beam</string>
+    <string name="title_activity_settings">@string/action_settings</string>
+
+    <string name="navigation_drawer_open">Open menu</string>
+    <string name="navigation_drawer_close">Close menu</string>
+
+    <string name="action_OK">OK</string>
+    <string name="action_go">Go</string>
+    <string name="action_GO">GO</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_CANCEL">CANCEL</string>
+    <string name="action_SAVE">SAVE</string>
+    <string name="action_TRANSFER">TRANSFER</string>
+    <string name="action_transfer">Transfer</string>
+    <string name="action_create">Create</string>
+    <string name="action_CREATE">CREATE</string>
+    <string name="action_turn_on">Turn On</string>
+    <string name="action_browse">Browse</string>
+    <string name="action_add">Add</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_REFRESH">REFRESH</string>
+    <string name="action_RETRY">RETRY</string>
+    <string name="action_INSTALL">INSTALL</string>
+    <string name="action_UNLOCK">UNLOCK</string>
+
+    <string name="action_add_account">Add a new bank account</string>
+    <string name="action_search_in_channel">Search in this channel</string>
+    <string name="action_filter_local">Filter list</string>
+
+    <string name="checkbox_show_channels">Show channels</string>
+    <string name="checkbox_show_torrents">Show videos</string>
+
+    <string name="action_bankaccounts">Bank Accounts</string>
+    <string name="action_transfer_money">Transfer Money</string>
+    <string name="action_fast_transfer_money">Fast Money Transfer</string>
+    <string name="action_my_channel">My channel</string>
+    <string name="action_my_playlists">My playlists</string>
+    <string name="action_popular_channels">Popular channels</string>
+    <string name="action_capture_video">Record a new video</string>
+    <string name="action_capture_image">Take a photo</string>
+    <string name="action_create_torrent">Create a new torrent</string>
+    <string name="action_create_channel">Create channel</string>
+    <string name="action_edit_channel">Edit channel</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_feedback">Send feedback</string>
+    <string name="action_shutdown">Shutdown Application</string>
+    <string name="action_shutdown_short">Shutdown</string>
+    <string name="dialog_shutdown">The wallet app and service will exit and stop all running tasks if you shutdown the service.\n\nShutdown the wallet service now?</string>
+
+    <string name="action_beam">Transfer money with NFC</string>
+    <string name="dialog_send_chooser">Send via</string>
+    <string name="dialog_enable_nfc_beam">You must first turn on NFC and Android Beam on both phones.\n\nTurn on NFC and Android Beam now?</string>
+    <string name="dialog_enable_beam">You must first turn on NFC and Android Beam on both phones.\n\nTurn on Android Beam now?</string>
+
+    <string name="action_subscribe">Add to favorites</string>
+    <string name="action_unsubscribe">Remove from favorites</string>
+    <string name="action_mychannel_add">Add to my channel</string>
+    <string name="action_mychannel_remove">Remove from my channel</string>
+    <string name="action_mychannel_edit">Edit my channel</string>
+
+    <string name="exception_http_500">Tribler encountered an internal exception</string>
+    <string name="warning_lost_connection">WARNING: Wi-Fi connection lost!</string>
+    <string name="info_no_connection">No Wi-Fi connection detected</string>
+    <string name="info_loading_failed">Loading is taking too long</string>
+
+    <string name="info_content_discovered">New content discovered!\n\"%s\"</string>
+    <string name="info_received_channel">Received channel</string>
+    <string name="dialog_received_channel">Do you want to add the received channel your favorites now?</string>
+    <string name="dialog_publish_video">Do you want to publish this video on your own channel now?</string>
+    <string name="dialog_publish_image">Do you want to publish this photo on your own channel now?</string>
+
+    <string name="status_subscribing">Adding to favorites now…</string>
+    <string name="info_subscribe_already">%s was already a favorite!</string>
+    <string name="info_subscribe_success">%s is now a favorite!</string>
+    <string name="info_subscribe_failure">%s is still not a favorite…</string>
+    <string name="status_unsubscribing">Removing from favorites now…</string>
+    <string name="info_unsubscribe_already">%s was already not a favorite!</string>
+    <string name="info_unsubscribe_success">%s is now not a favorite anymore!</string>
+    <string name="info_unsubscribe_failure">%s is still a favorite…</string>
+
+    <string name="info_added_already">%s was already added!</string>
+    <string name="info_added_success">%s is now added!</string>
+    <string name="info_added_failure">Failed to add %s</string>
+    <string name="info_removed_already">%s was already removed!</string>
+    <string name="info_removed_success">%s is now removed!</string>
+    <string name="info_removed_failure">Failed to remove %s</string>
+    <string name="info_created_success">%s is now created!</string>
+    <string name="info_created_failure">Failed to create %s</string>
+    <string name="info_cancel_capture_video">No video was recorded</string>
+    <string name="info_cancel_capture_image">No photo was taken</string>
+    <string name="error_output_file">failed to obtain output file</string>
+
+    <string name="info_start_download_already">%s was already downloading!</string>
+    <string name="info_start_download_success">%s is now downloading!</string>
+    <string name="info_start_download_failure">Failed to start downloading %s</string>
+
+    <string name="status_opening_eventstream">Starting service…</string>
+    <string name="status_searching">Searching…</string>
+    <string name="status_shutting_down">Shutting down…</string>
+    <string name="status_saving_changes">Saving changes…</string>
+    <string name="status_nosetests">Running all tests…</string>
+    <string name="status_experiment">Running experiment: %s</string>
+
+    <string name="dialog_create_my_channel">Your own channel is not created yet.\n\nCreate your own channel now?</string>
+    <string name="label_channel_name">Channel name</string>
+    <string name="label_channel_description">Description</string>
+    <string name="status_creating_channel">Creating channel…</string>
+    <string name="status_loading_channel">Loading channel…</string>
+    <string name="explain_create_channel">Create your own channel to publish your content!\n\nOthers can add your channel to their favorites to keep up to date and boost your channel\'s popularity!</string>
+    <string name="explain_create_torrent">Share your content by creating a torrent!\n\nOthers can download torrents from your channel and share them with their friends!</string>
+    <string name="label_torrent_name">Torrent name</string>
+    <string name="label_torrent_description">Description</string>
+
+    <string name="dialog_add_torrent">Add a torrent to your channel by url or browse:</string>
+    <string name="dialog_delete_torrent">Deleting \"%s\" from your channel.\n\nAre you sure?</string>
+    <string name="dialog_create_torrent">Create torrent from file</string>
+    <string name="status_creating_torrent">Creating torrent…</string>
+    <string name="status_adding_torrent">Adding torrent…</string>
+    <string name="hint_add_torrent">http:// or magnet:link</string>
+    <string name="iom_unlock_text">Welcome to the Wallet application. Please unlock your wallet by entering the password below:</string>
+    <string name="explain_wallet_unlock">It seems that your wallet is locked. Please unlock your wallet by entering the correct password below:</string>
+    <string name="password">Password</string>
+    <string name="explain_set_password">Welcome to the Wallet application! It seems that you are using this mobile app for the first time. For security reasons, you should set a password to unlock your wallet. Please enter this below:</string>
+    <string name="no_bank_accounts_text">You haven\'t added any bank account (yet). You can add one by pressing the + button.</string>
+    <string name="action_enter_input">Input required</string>
+    <string name="transfer_instructions">To transfer money to another bank account, please enter the details of the transfer below.</string>
+    <string name="switch_explanation">Money switching is an EXPERIMENTAL feature that allows you and others to make fast payments. This service runs in the background and by enabling this, you give this app automated control over specific bank accounts. For this service, you are able to charge a (small) fee.</string>
+    <string name="action_log">Log</string>
+    <string name="action_switch">Routed Payments</string>
+    <string name="action_toggle_account">Manage switching accounts</string>
+    <string name="no_switch_accounts_found">No eligible bank accounts found for switching.</string>
+    <string name="action_proceed">Proceed</string>
+    <string name="tx_fee_explanation">You can set a fixed transaction fee that indicates how much you earn on each switch transaction. This defaults to one cent.</string>
+
+</resources>

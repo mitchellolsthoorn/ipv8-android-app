@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="@string/title_app">
+        <menu>
+            <item
+                android:id="@+id/nav_shutdown"
+                android:icon="@drawable/ic_menu_shutdown"
+                android:onClick="navShutdownClicked"
+                android:title="@string/action_shutdown" />
+        </menu>
+    </item>
+
+</menu>

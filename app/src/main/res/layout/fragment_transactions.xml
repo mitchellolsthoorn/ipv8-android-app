@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="16dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:background="#eee">
+
+            <TextView
+                android:id="@+id/bank_name"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:text="Rabobank"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/account_address"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:text="NL90IBAN0123456789"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginRight="15dp"
+            android:layout_centerVertical="true">
+
+            <TextView
+                android:id="@+id/bank_balance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="€ 20,23"
+                android:layout_gravity="center|right"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:textSize="17sp" />
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+    <include
+        layout="@layout/fragment_list_fast_scroller" />
+
+</LinearLayout>
