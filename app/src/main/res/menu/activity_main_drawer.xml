@@ -11,4 +11,21 @@
         </menu>
     </item>
 
+    <item android:title="Switch Mode">
+        <menu>
+            <item
+                android:id="@+id/nav_attestor"
+                android:onClick="navAttestorClicked"
+                android:title="Attestor" />
+            <item
+                android:id="@+id/nav_attestee"
+                android:onClick="navAttesteeClicked"
+                android:title="Attestee" />
+            <item
+                android:id="@+id/nav_verifier"
+                android:onClick="navVerifierClicked"
+                android:title="Verifier" />
+        </menu>
+    </item>
+
 </menu>

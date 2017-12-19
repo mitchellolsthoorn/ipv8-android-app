@@ -37,6 +37,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout.LayoutParams;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,7 +49,10 @@ import org.ipv8.android.restapi.EventStream;
 import org.ipv8.android.service.IPV8Service;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import butterknife.BindView;
@@ -128,6 +133,7 @@ public class MainActivity extends BaseActivity implements Handler.Callback {
 
         // Create API client
         // TODO
+        switchFragment(ListFragment.class);
     }
 
     /**
@@ -409,6 +415,39 @@ public class MainActivity extends BaseActivity implements Handler.Callback {
         });
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+    private void updateListItems(Iterable<String> items){
+        Fragment fragment = getCurrentFragment();
+        if (fragment instanceof ListFragment) {
+            ListFragment listFragment = (ListFragment) fragment;
+            listFragment.getAdapter().clear();
+            for (String s : items){
+                listFragment.getAdapter().addObject(s);
+            }
+            listFragment.getAdapter().notifyDataSetChanged();
+        }
+    }
+
+    public void navAttestorClicked(MenuItem item) {
+        Log.v("NAVIGATION", "Clicked Attestor!");
+        List<String> list = Arrays.asList("I", "am", "Attestor");
+        updateListItems(list);
+        drawer.closeDrawer(GravityCompat.START);
+    }
+
+    public void navAttesteeClicked(MenuItem item) {
+        Log.v("NAVIGATION", "Clicked Attestee!");
+        List<String> list = Arrays.asList("I", "am", "Attestee");
+        updateListItems(list);
+        drawer.closeDrawer(GravityCompat.START);
+    }
+
+    public void navVerifierClicked(MenuItem item) {
+        Log.v("NAVIGATION", "Clicked Verifier!");
+        List<String> list = Arrays.asList("I", "am", "Verifier");
+        updateListItems(list);
+        drawer.closeDrawer(GravityCompat.START);
     }
 
     @Override

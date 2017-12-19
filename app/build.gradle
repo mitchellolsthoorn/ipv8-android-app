@@ -23,7 +23,7 @@ model {
             // Android Beam supports large payload transfers
             // over Bluetooth since api level 16
             // Dynamic linker works properly since api level 18
-            minSdkVersion.apiLevel 18
+            minSdkVersion.apiLevel 21
             // Compatible up to api level 23
             // Avoid new strict file security measures of api level 24
             targetSdkVersion.apiLevel 23
@@ -53,9 +53,11 @@ model {
             moduleName = "main"
             toolchain = "gcc"
             toolchainVersion = "4.9"
-            platformVersion = 18
+            platformVersion = 21
             stl = "gnustl_shared"
             renderscriptNdkMode = false
+            CFlags.add("-isystem" + file(System.getenv('LOCALAPPDATA') + "/Android/sdk/ndk-bundle/sysroot/usr/include/arm-linux-androideabi"))
+            CFlags.add("-I" + file(System.getenv('LOCALAPPDATA') + "/Android/sdk/ndk-bundle/sysroot/usr/include"))
             CFlags.add("-I" + file("src/main/jni/include/python2.7"))
             ldFlags.add("-L" + file("src/main/jni/lib"))
             ldLibs.addAll(["log", "python2.7"])

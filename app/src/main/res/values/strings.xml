@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Wallet</string>
+    <string name="app_name">IPv8 Attestation App</string>
     <string name="app_website">www.tribler.org</string>
     <string name="app_feedback_url">https://forum.tribler.org</string>
     <string name="service_url">http://127.0.0.1</string>

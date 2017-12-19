@@ -1,9 +1,14 @@
 package org.ipv8.android;
 
+import android.content.Context;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import java.util.Collection;
 
@@ -57,8 +62,17 @@ public class IOMViewAdapter extends FilterableRecyclerViewAdapter {
      */
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        // TODO
-        return null;
+        Context context = parent.getContext();
+        LayoutInflater inflater = LayoutInflater.from(context);
+
+        // Inflate the custom layout
+        TextView text=new TextView(context);
+        text.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        text.setText("");
+
+        // Return a new holder instance
+        ViewHolder viewHolder = new ViewHolder(text);
+        return viewHolder;
     }
 
     /**
@@ -66,12 +80,22 @@ public class IOMViewAdapter extends FilterableRecyclerViewAdapter {
      */
     @Override
     public void onBindViewHolder(final RecyclerView.ViewHolder viewHolder, int adapterPosition) {
-        // TODO
+        String content = "" + getObject(adapterPosition);
+
+        // Set item views based on your views and data model
+        TextView textView = (TextView) viewHolder.itemView;
+        textView.setText(content);
     }
 
     public interface OnClickListener {
     }
 
     public interface OnSwipeListener {
+    }
+
+    public class ViewHolder extends RecyclerView.ViewHolder {
+        public ViewHolder(View itemView) {
+            super(itemView);
+        }
     }
 }

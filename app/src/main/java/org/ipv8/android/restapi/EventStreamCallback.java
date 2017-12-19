@@ -31,7 +31,7 @@ import okhttp3.Response;
 
 public class EventStreamCallback implements Callback {
 
-    private boolean _ready = false;
+    private boolean _ready = true;
     private final Gson _gson = new Gson();
     private final ArrayList<Handler> _eventHandlers = new ArrayList<>();
 
