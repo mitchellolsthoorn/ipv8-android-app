@@ -165,19 +165,8 @@ public class MainActivity extends BaseActivity implements Handler.Callback {
             showLoading(false);
             enableNavigationMenu(true);
             switchFragment(ListFragment.class);
-            //return true;
+            return true;
         }
-        // TODO
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("type", "peers");
-
-        SingleShotRequest request = new SingleShotRequest("attestation", "GET", map){
-            protected void onPostExecute(String result) {
-                Log.i("PEERS", result);
-            }
-        };
-        request.execute();
-
         return true;
     }
 
