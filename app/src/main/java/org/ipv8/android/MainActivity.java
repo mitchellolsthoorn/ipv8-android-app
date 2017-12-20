@@ -37,6 +37,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -88,6 +89,7 @@ public class MainActivity extends BaseActivity implements Handler.Callback {
     private ActionBarDrawerToggle _navToggle;
     private ConnectivityManager _connectivityManager;
     private Handler _eventHandler;
+    private Role _role = Role.UNKNOWN;
 
     /**
      * {@inheritDoc}
@@ -417,12 +419,12 @@ public class MainActivity extends BaseActivity implements Handler.Callback {
         dialog.show();
     }
 
-    private void updateListItems(Iterable<String> items){
+    private void updateListItems(Iterable<Object> items){
         Fragment fragment = getCurrentFragment();
         if (fragment instanceof ListFragment) {
             ListFragment listFragment = (ListFragment) fragment;
             listFragment.getAdapter().clear();
-            for (String s : items){
+            for (Object s : items){
                 listFragment.getAdapter().addObject(s);
             }
             listFragment.getAdapter().notifyDataSetChanged();
@@ -431,21 +433,36 @@ public class MainActivity extends BaseActivity implements Handler.Callback {
 
     public void navAttestorClicked(MenuItem item) {
         Log.v("NAVIGATION", "Clicked Attestor!");
-        List<String> list = Arrays.asList("I", "am", "Attestor");
+        _role = Role.ATTESTOR;
+        List<Object> list = Arrays.asList(new Object[] {
+                new String[] {"2", "Someone wants you to measure something.", "Measurement:"},
+                new String[] {"3", "Submit", "Ignore"}
+        });
         updateListItems(list);
         drawer.closeDrawer(GravityCompat.START);
     }
 
     public void navAttesteeClicked(MenuItem item) {
         Log.v("NAVIGATION", "Clicked Attestee!");
-        List<String> list = Arrays.asList("I", "am", "Attestee");
+        _role = Role.ATTESTEE;
+        List<Object> list = Arrays.asList(new Object[] {
+                new String[] {"2", "Ask someone to attest.", "Attribute:"},
+                new String[] {"3", "Send"},
+                new String[] {"1", "Allow someone to verify something."},
+                new String[] {"3", "Yes", "No"}
+        });
         updateListItems(list);
         drawer.closeDrawer(GravityCompat.START);
     }
 
     public void navVerifierClicked(MenuItem item) {
         Log.v("NAVIGATION", "Clicked Verifier!");
-        List<String> list = Arrays.asList("I", "am", "Verifier");
+        _role = Role.VERIFIER;
+        List<Object> list = Arrays.asList(new Object[] {
+                new String[] {"2", "Ask someone to verify.", "Attribute:"},
+                new String[] {"2", "Required value:"},
+                new String[] {"3", "Send"}
+        });
         updateListItems(list);
         drawer.closeDrawer(GravityCompat.START);
     }
