@@ -34,6 +34,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatDelegate;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -90,6 +91,7 @@ public class MainActivity extends BaseActivity implements Handler.Callback {
     private ConnectivityManager _connectivityManager;
     private Handler _eventHandler;
     private Role _role = Role.UNKNOWN;
+    private boolean isLoading = true;
 
     /**
      * {@inheritDoc}
@@ -108,8 +110,7 @@ public class MainActivity extends BaseActivity implements Handler.Callback {
         // Hamburger icon
         _navToggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(_navToggle);
-        _navToggle.setDrawerIndicatorEnabled(false);
-        _navToggle.syncState();
+        enableNavigationMenu(false);
 
         // getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -121,10 +122,8 @@ public class MainActivity extends BaseActivity implements Handler.Callback {
         _eventHandler = new Handler(Looper.getMainLooper(), this);
         EventStream.addHandler(_eventHandler);
 
-        if (!EventStream.isReady()) {
-            showLoading(R.string.status_opening_eventstream);
-            EventStream.openEventStream();
-        }
+        showLoading(R.string.status_opening_eventstream);
+        EventStream.openEventStream();
 
         // Write permissions on sdcard?
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -135,7 +134,6 @@ public class MainActivity extends BaseActivity implements Handler.Callback {
 
         // Create API client
         // TODO
-        switchFragment(ListFragment.class);
     }
 
     /**
@@ -156,13 +154,26 @@ public class MainActivity extends BaseActivity implements Handler.Callback {
      */
     @Override
     public boolean handleMessage(Message message) {
+        Log.v("RAWMSG", "" + message);
+
+        if (isLoading){
+            isLoading = false;
+            showLoading(false);
+            enableNavigationMenu(true);
+            switchFragment(ListFragment.class);
+            return true;
+        }
         // TODO
 
         return true;
     }
 
-    public void enableNavigationMenu() {
-        _navToggle.setDrawerIndicatorEnabled(true);
+    public void enableNavigationMenu(boolean enabled) {
+        if (enabled)
+            drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+        else
+            drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+        _navToggle.setDrawerIndicatorEnabled(enabled);
         _navToggle.syncState();
     }
 

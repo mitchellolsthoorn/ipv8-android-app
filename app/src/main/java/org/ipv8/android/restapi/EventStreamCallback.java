@@ -31,7 +31,7 @@ import okhttp3.Response;
 
 public class EventStreamCallback implements Callback {
 
-    private boolean _ready = true;
+    private boolean _ready = false;
     private final Gson _gson = new Gson();
     private final ArrayList<Handler> _eventHandlers = new ArrayList<>();
 
@@ -98,7 +98,8 @@ public class EventStreamCallback implements Callback {
 
                 try {
                     //TODO: do not assume 1 event per 1 line and 1 line per 1 event
-                    event = parseEvent(line);
+                    //event = parseEvent(line);
+                    event = _gson.fromJson(line, JsonElement.class);
                     if (event != null) {
                         Log.v("onEvent", event.getClass().getSimpleName() + "; handlers: " + _eventHandlers.size());
 
@@ -121,24 +122,4 @@ public class EventStreamCallback implements Callback {
         }
     }
 
-    @Nullable
-    private Object parseEvent(String eventString) throws JsonSyntaxException {
-        // Parse container to determine event type
-        EventContainer container = _gson.fromJson(eventString, EventContainer.class);
-        JsonElement event = container.getEvent();
-        if (event == null) {
-            Log.d("parseEvent", String.format("empty event body: %s", eventString));
-            // Some event types have empty event body
-            event = new JsonObject();
-        }
-        switch (container.getType()) {
-
-            case EventsStartEvent.TYPE:
-                return _gson.fromJson(event, EventsStartEvent.class);
-
-            default:
-                Log.e("parseEvent", String.format("Unknown event type: %s", container.getType()));
-                return null;
-        }
-    }
 }

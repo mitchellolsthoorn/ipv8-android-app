@@ -15,7 +15,7 @@ public class EventStream {
 
     private static final OkHttpClient CLIENT = buildClient();
 
-    private static final Request REQUEST = buildRequest("http://127.0.0.1:8085");
+    private static final Request REQUEST = buildRequest("http://127.0.0.1:8085", "network");
 
     private static final EventStreamCallback CALLBACK = new EventStreamCallback();
 
@@ -72,9 +72,9 @@ public class EventStream {
                 .build();
     }
 
-    private static Request buildRequest(String baseUrl) {
+    private static Request buildRequest(String baseUrl, String endpoint) {
         return new Request.Builder()
-                .url(baseUrl + "/events")
+                .url(baseUrl + "/" + endpoint)
                 .build();
     }
 
