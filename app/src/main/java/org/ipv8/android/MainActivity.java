@@ -46,18 +46,24 @@ import android.widget.Toast;
 
 import com.cantrowitz.rxbroadcast.RxBroadcast;
 import com.facebook.stetho.Stetho;
+import com.facebook.stetho.inspector.elements.ObjectDescriptor;
 
 import org.ipv8.android.restapi.EventStream;
+import org.ipv8.android.restapi.SingleShotRequest;
 import org.ipv8.android.service.IPV8Service;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import butterknife.BindView;
+import okhttp3.Response;
 import rx.Observable;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
@@ -154,16 +160,23 @@ public class MainActivity extends BaseActivity implements Handler.Callback {
      */
     @Override
     public boolean handleMessage(Message message) {
-        Log.v("RAWMSG", "" + message);
-
         if (isLoading){
             isLoading = false;
             showLoading(false);
             enableNavigationMenu(true);
             switchFragment(ListFragment.class);
-            return true;
+            //return true;
         }
         // TODO
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("type", "peers");
+
+        SingleShotRequest request = new SingleShotRequest("attestation", "GET", map){
+            protected void onPostExecute(String result) {
+                Log.i("PEERS", result);
+            }
+        };
+        request.execute();
 
         return true;
     }
