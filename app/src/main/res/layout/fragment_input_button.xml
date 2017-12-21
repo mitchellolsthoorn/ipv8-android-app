@@ -9,6 +9,7 @@
 
     <mehdi.sakout.fancybuttons.FancyButton
         android:id="@+id/left_button"
+        android:onClick="onGenericButtonClicked"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -27,6 +28,7 @@
         fancy:fb_textColor="@color/orange" />
 
     <mehdi.sakout.fancybuttons.FancyButton
+        android:onClick="onGenericButtonClicked"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"

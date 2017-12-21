@@ -38,7 +38,9 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -56,6 +58,7 @@ import com.google.gson.reflect.TypeToken;
 
 import org.ipv8.android.restapi.EventStream;
 import org.ipv8.android.restapi.SingleShotRequest;
+import org.ipv8.android.restapi.json.AttestationRESTInterface;
 import org.ipv8.android.restapi.json.AttestationRESTListener;
 import org.ipv8.android.service.IPV8Service;
 
@@ -73,6 +76,7 @@ import java.util.Map;
 import java.util.Set;
 
 import butterknife.BindView;
+import mehdi.sakout.fancybuttons.FancyButton;
 import okhttp3.Response;
 import rx.Observable;
 import rx.Observer;
@@ -111,9 +115,33 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
     private boolean isLoading = true;
 
     // Service related
+    private AttestationRESTInterface restInterface;
     private String[] knownMids; // List of mids
     private List<Map.Entry<String, String>> outstandingRequests; // List of (mid, attribute_name)
     private Map<String, List<Map.Entry<String, String>>> verificationOutput; // Map of attribute_hash -> [(value, match)]
+    private Map<Map.Entry<String, String>, String> attributeHashes = new HashMap<Map.Entry<String, String>, String>();
+
+    // Selection related
+    private String subject;
+    private String subjectAttribute;
+
+    private static ArrayList<View> getViewsByTag(ViewGroup root, String tag){
+        ArrayList<View> views = new ArrayList<View>();
+        final int childCount = root.getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            final View child = root.getChildAt(i);
+            if (child instanceof ViewGroup) {
+                views.addAll(getViewsByTag((ViewGroup) child, tag));
+            }
+
+            final Object tagObj = child.getTag();
+            if (tagObj != null && tagObj.equals(tag)) {
+                views.add(child);
+            }
+
+        }
+        return views;
+    }
 
     /**
      * {@inheritDoc}
@@ -153,9 +181,6 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
         } else {
             startService();
         }
-
-        // Create API client
-        // TODO
     }
 
     /**
@@ -181,6 +206,10 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
         }
     }
 
+    private String toAttributeHash(String subject, String attributeName){
+        return attributeHashes.get(new AbstractMap.SimpleEntry<String, String>(subject, attributeName));
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -192,6 +221,7 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
             showLoading(false);
             enableNavigationMenu(true);
             switchFragment(ListFragment.class);
+            restInterface = new AttestationRESTInterface(this);
             return true;
         }
         return true;
@@ -469,15 +499,44 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
         }
     }
 
-    public void navAttestorClicked(MenuItem item) {
-        setUnknownRole(false);
-        Log.v("NAVIGATION", "Clicked Attestor!");
-        _role = Role.ATTESTOR;
+    public void viewPeerList(){
+        updateListItems(new ArrayList<Object>());
+        // TODO Adapt to role
+        // TODO On click peer in list go to view*Dialog() with subject/subjectAttribute
+    }
+
+    public void viewAttestorDialog(){
         List<Object> list = Arrays.asList(new Object[] {
                 new String[] {"2", "Someone wants you to measure something.", "Measurement:"},
                 new String[] {"3", "Submit", "Ignore"}
         });
         updateListItems(list);
+    }
+
+    public void viewAttesteeDialog(){
+        List<Object> list = Arrays.asList(new Object[] {
+                new String[] {"2", "Ask someone to attest.", "Attribute:"},
+                new String[] {"3", "Send", "Cancel"}
+                //new String[] {"1", "Allow someone to verify something."}, // TODO
+                //new String[] {"3", "Yes", "No"}
+        });
+        updateListItems(list);
+    }
+
+    public void viewVerifierDialog(){
+        List<Object> list = Arrays.asList(new Object[] {
+                new String[] {"2", "Ask someone to verify.", "Attribute:"},
+                new String[] {"2", "Required value:"},
+                new String[] {"3", "Send", "Cancel"}
+        });
+        updateListItems(list);
+    }
+
+    public void navAttestorClicked(MenuItem item) {
+        setUnknownRole(false);
+        Log.v("NAVIGATION", "Clicked Attestor!");
+        _role = Role.ATTESTOR;
+        viewPeerList();
         drawer.closeDrawer(GravityCompat.START);
     }
 
@@ -485,13 +544,7 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
         setUnknownRole(false);
         Log.v("NAVIGATION", "Clicked Attestee!");
         _role = Role.ATTESTEE;
-        List<Object> list = Arrays.asList(new Object[] {
-                new String[] {"2", "Ask someone to attest.", "Attribute:"},
-                new String[] {"3", "Send"},
-                new String[] {"1", "Allow someone to verify something."},
-                new String[] {"3", "Yes", "No"}
-        });
-        updateListItems(list);
+        viewPeerList();
         drawer.closeDrawer(GravityCompat.START);
     }
 
@@ -499,13 +552,99 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
         setUnknownRole(false);
         Log.v("NAVIGATION", "Clicked Verifier!");
         _role = Role.VERIFIER;
-        List<Object> list = Arrays.asList(new Object[] {
-                new String[] {"2", "Ask someone to verify.", "Attribute:"},
-                new String[] {"2", "Required value:"},
-                new String[] {"3", "Send"}
-        });
-        updateListItems(list);
+        viewPeerList();
         drawer.closeDrawer(GravityCompat.START);
+    }
+
+    public void onGenericButtonClicked(View view){
+        FancyButton button = (FancyButton) view;
+        switch (_role){
+            case ATTESTOR:
+                onAttestorButtonClicked(button.getText().toString());
+                break;
+            case ATTESTEE:
+                onAttesteeButtonClicked(button.getText().toString());
+                break;
+            case VERIFIER:
+                onVerifierButtonClicked(button.getText().toString());
+                break;
+        }
+    }
+
+    private List<String> getGenericInputs(){
+        List<View> inputFields = getViewsByTag((ViewGroup) findViewById(R.id.fragment_main), "generic_text_input");
+        ArrayList<String> out = new ArrayList<String>();
+        for(View v: inputFields){
+            out.add(((EditText) v).getText().toString());
+        }
+        return out;
+    }
+
+    private void onAttestorButtonClicked(String button){
+        if ("Submit".equals(button)){
+            List<String> inputs = getGenericInputs();
+            if ((inputs.size() != 1) || ("".equals(inputs.get(0)))){
+                Toast.makeText(MainActivity.this, "Invalid attestation input!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if ((knownMids == null) || (!Arrays.asList(knownMids).contains(subject))){
+                Toast.makeText(MainActivity.this, "No valid subject selected!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if ((subjectAttribute == null) || ("".equals(subjectAttribute))){
+                Toast.makeText(MainActivity.this, "No valid attribute selected!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            String attestationValue = inputs.get(0);
+            restInterface.put_attest(subject, subjectAttribute, attestationValue);
+            viewPeerList();
+        } else if ("Ignore".equals(button)){
+            viewPeerList();
+        }
+    }
+
+    private void onAttesteeButtonClicked(String button){
+        if ("Send".equals(button)){
+            List<String> inputs = getGenericInputs();
+            if ((inputs.size() != 1) || ("".equals(inputs.get(0)))){
+                Toast.makeText(MainActivity.this, "Invalid attestation input!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if ((knownMids == null) || (!Arrays.asList(knownMids).contains(subject))){
+                Toast.makeText(MainActivity.this, "No valid subject selected!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            String attributeName = inputs.get(0);
+            restInterface.put_request(subject, attributeName);
+            viewPeerList();
+        } else if ("Cancel".equals(button)){
+            viewPeerList();
+        }
+    }
+
+    private void onVerifierButtonClicked(String button){
+        if ("Send".equals(button)){
+            List<String> inputs = getGenericInputs();
+            if ((inputs.size() != 2) || ("".equals(inputs.get(0)) || ("".equals(inputs.get(1))))){
+                Toast.makeText(MainActivity.this, "Invalid attestation input!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if ((knownMids == null) || (!Arrays.asList(knownMids).contains(subject))){
+                Toast.makeText(MainActivity.this, "No valid subject selected!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            String attributeName = inputs.get(0);
+            String attributeHash = toAttributeHash(subject, attributeName);
+            if ((attributeHash == null) || ("".equals(attributeHash))){
+                Toast.makeText(MainActivity.this, "Could not link attribute name to hash!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            String attributeValue = inputs.get(1);
+            restInterface.put_verify(subject, attributeHash, new String[] {attributeValue});
+            viewPeerList();
+        } else if ("Cancel".equals(button)){
+            viewPeerList();
+        }
     }
 
     @Override
