@@ -47,15 +47,25 @@ import android.widget.Toast;
 import com.cantrowitz.rxbroadcast.RxBroadcast;
 import com.facebook.stetho.Stetho;
 import com.facebook.stetho.inspector.elements.ObjectDescriptor;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 
 import org.ipv8.android.restapi.EventStream;
 import org.ipv8.android.restapi.SingleShotRequest;
+import org.ipv8.android.restapi.json.AttestationRESTListener;
 import org.ipv8.android.service.IPV8Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -69,7 +79,7 @@ import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
-public class MainActivity extends BaseActivity implements Handler.Callback {
+public class MainActivity extends BaseActivity implements Handler.Callback, AttestationRESTListener {
 
     public static final int ADD_ACCOUNT_ACTIVITY_REQUEST_CODE = 103;
     public static final int INPUT_REQUIRED_ACTIVITY_REQUEST_CODE = 105;
@@ -93,11 +103,17 @@ public class MainActivity extends BaseActivity implements Handler.Callback {
     @BindView(R.id.main_progress_status)
     TextView statusBar;
 
+    // GUI
     private ActionBarDrawerToggle _navToggle;
     private ConnectivityManager _connectivityManager;
     private Handler _eventHandler;
     private Role _role = Role.UNKNOWN;
     private boolean isLoading = true;
+
+    // Service related
+    private String[] knownMids; // List of mids
+    private List<Map.Entry<String, String>> outstandingRequests; // List of (mid, attribute_name)
+    private Map<String, List<Map.Entry<String, String>>> verificationOutput; // Map of attribute_hash -> [(value, match)]
 
     /**
      * {@inheritDoc}
@@ -220,8 +236,6 @@ public class MainActivity extends BaseActivity implements Handler.Callback {
                     for (Parcelable rawMsg : rawMsgs) {
                         // Decode message
                         NdefRecord[] records = ((NdefMessage) rawMsg).getRecords();
-
-                        // TODO we can parse payments here
                     }
                 }
                 return;
@@ -484,9 +498,6 @@ public class MainActivity extends BaseActivity implements Handler.Callback {
     protected void onResume() {
         super.onResume();
 
-        // Create API client
-        // TODO
-
         Context context = this;
     }
 
@@ -497,8 +508,6 @@ public class MainActivity extends BaseActivity implements Handler.Callback {
         showLoading(R.string.status_shutting_down);
 
         EventStream.closeEventStream();
-
-        // TODO
     }
 
     protected void startService() {
@@ -509,4 +518,45 @@ public class MainActivity extends BaseActivity implements Handler.Callback {
         IPV8Service.stop(this);
     }
 
+    @Override
+    public void onPeers(String s) {
+        Gson gson = new Gson();
+        knownMids = gson.fromJson(s, String[].class);
+    }
+
+    @Override
+    public void onOutstanding(String s) {
+        List<Map.Entry<String, String>> out = new ArrayList<Map.Entry<String, String>>();
+        JsonArray list = (JsonArray) new JsonParser().parse(s);
+        if(list != null && list.size() > 0) {
+            for (JsonElement rawTuple : list) {
+                JsonArray tuple = (JsonArray) rawTuple;
+                out.add(new AbstractMap.SimpleImmutableEntry<String, String>(tuple.get(0).getAsString(), tuple.get(1).getAsString()));
+            }
+        }
+        outstandingRequests = out;
+    }
+
+    @Override
+    public void onVerificationOutput(String s) {
+        Map<String, List<Map.Entry<String, String>>> out = new HashMap<String, List<Map.Entry<String, String>>>();
+        JsonObject rootlist = (JsonObject) new JsonParser().parse(s);
+        for (Map.Entry<String, JsonElement> rawList : rootlist.entrySet()) {
+            List<Map.Entry<String, String>> subout = new ArrayList<Map.Entry<String, String>>();
+            JsonArray list = (JsonArray) rawList.getValue();
+            if(list != null && list.size() > 0) {
+                for (JsonElement rawTuple : list) {
+                    JsonArray tuple = (JsonArray) rawTuple;
+                    subout.add(new AbstractMap.SimpleImmutableEntry<String, String>(tuple.get(0).getAsString(), tuple.get(1).getAsString()));
+                }
+            }
+            out.put(rawList.getKey(), subout);
+        }
+        verificationOutput = out;
+    }
+
+    @Override
+    public void onAttributes(String s) {
+        // TODO: Upstream broken
+    }
 }
