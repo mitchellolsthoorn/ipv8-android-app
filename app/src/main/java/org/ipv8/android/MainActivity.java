@@ -83,7 +83,7 @@ import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
-public class MainActivity extends BaseActivity implements Handler.Callback, AttestationRESTListener {
+public class MainActivity extends BaseActivity implements Handler.Callback, AttestationRESTListener, IOMViewAdapter.OnClickListener {
 
     public static final int ADD_ACCOUNT_ACTIVITY_REQUEST_CODE = 103;
     public static final int INPUT_REQUIRED_ACTIVITY_REQUEST_CODE = 105;
@@ -118,12 +118,13 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
     private AttestationRESTInterface restInterface;
     private String[] knownMids; // List of mids
     private List<Map.Entry<String, String>> outstandingRequests; // List of (mid, attribute_name)
-    private Map<String, List<Map.Entry<String, String>>> verificationOutput; // Map of attribute_hash -> [(value, match)]
+    private Map<String, List<Map.Entry<String, String>>> verificationOutput = new HashMap<String, List<Map.Entry<String, String>>>(); // Map of attribute_hash -> [(value, match)]
     private Map<Map.Entry<String, String>, String> attributeHashes = new HashMap<Map.Entry<String, String>, String>();
 
     // Selection related
     private String subject;
     private String subjectAttribute;
+    private boolean peerlistactive = false;
 
     private static ArrayList<View> getViewsByTag(ViewGroup root, String tag){
         ArrayList<View> views = new ArrayList<View>();
@@ -221,6 +222,14 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
             showLoading(false);
             enableNavigationMenu(true);
             switchFragment(ListFragment.class);
+
+            Fragment fragment = getCurrentFragment();
+            if (fragment instanceof ListFragment) {
+                ListFragment listFragment = (ListFragment) fragment;
+                if (!this.equals(listFragment.getAdapter().getClickListener())){
+                    listFragment.getAdapter().setClickListener(this);
+                }
+            }
             restInterface = new AttestationRESTInterface(this);
             return true;
         }
@@ -500,9 +509,72 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
     }
 
     public void viewPeerList(){
-        updateListItems(new ArrayList<Object>());
-        // TODO Adapt to role
+        peerlistactive = true;
+        switch (_role){
+            case ATTESTOR:
+                restInterface.retrieve_outstanding();
+                break;
+            case ATTESTEE:
+                restInterface.retrieve_peers();
+                break;
+            case VERIFIER:
+                restInterface.retrieve_peers();
+                restInterface.retrieve_verification_output();
+                break;
+        }
         // TODO On click peer in list go to view*Dialog() with subject/subjectAttribute
+    }
+
+    private void gotPeerResults(List<String> peers){
+        if (peerlistactive){
+            switch (_role) {
+                case ATTESTOR:
+                case ATTESTEE:
+                    ArrayList<Object> list = new ArrayList<Object>();
+                    list.add("List of found peers:");
+                    list.addAll(peers);
+                    updateListItems(list);
+                    break;
+                case VERIFIER:
+                    ArrayList<Object> vlist = new ArrayList<Object>();
+                    vlist.add("List of found peers:");
+                    vlist.addAll(peers);
+                    vlist.add("List of attribute verifications:");
+                    for (Map.Entry<String, List<Map.Entry<String, String>>> entry: verificationOutput.entrySet()){
+                        String hash = entry.getKey();
+                        Map.Entry<String, String> vmatch = entry.getValue().get(0);
+                        for (Map.Entry<Map.Entry<String, String>, String> mEntry : attributeHashes.entrySet()){
+                            String mid = mEntry.getKey().getKey();
+                            String attributeName = mEntry.getKey().getValue();
+                            String attributeHash = mEntry.getValue();
+                            if (attributeHash.equals(hash)){
+                                vlist.add(mid + " " + attributeName + " equals " + vmatch.getKey() + "? " + vmatch.getValue());
+                                break;
+                            }
+                        }
+                    }
+                    updateListItems(vlist);
+                    break;
+            }
+        }
+    }
+
+    private void gotOutstandingRequests(){
+        if (peerlistactive){
+            switch (_role) {
+                case ATTESTOR:
+                    ArrayList<Object> list = new ArrayList<Object>();
+                    list.add("List of attestation requests:");
+                    for (Map.Entry<String, String> request: outstandingRequests){
+                        list.add(request.getKey() + ": " + request.getValue());
+                    }
+                    updateListItems(list);
+                case ATTESTEE:
+                    break;
+                case VERIFIER:
+                    break;
+            }
+        }
     }
 
     public void viewAttestorDialog(){
@@ -675,6 +747,10 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
     public void onPeers(String s) {
         Gson gson = new Gson();
         knownMids = gson.fromJson(s, String[].class);
+        for (String mid: knownMids){
+            restInterface.retrieve_attributes(mid);
+        }
+        gotPeerResults(Arrays.asList(knownMids));
     }
 
     @Override
@@ -688,6 +764,7 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
             }
         }
         outstandingRequests = out;
+        gotOutstandingRequests();
     }
 
     @Override
@@ -706,10 +783,19 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
             out.put(rawList.getKey(), subout);
         }
         verificationOutput = out;
+        gotPeerResults(Arrays.asList(knownMids));
     }
 
     @Override
     public void onAttributes(String s) {
-        // TODO: Upstream broken
+        JsonArray list = (JsonArray) new JsonParser().parse(s);
+        if(list != null && list.size() > 0) {
+            for (JsonElement rawTuple : list) {
+                JsonArray tuple = (JsonArray) rawTuple;
+                Map.Entry<String, String> key = new AbstractMap.SimpleImmutableEntry<String, String>(subject, tuple.get(0).getAsString());
+                attributeHashes.put(key, tuple.get(1).getAsString());
+            }
+        }
+        gotPeerResults(Arrays.asList(knownMids));
     }
 }

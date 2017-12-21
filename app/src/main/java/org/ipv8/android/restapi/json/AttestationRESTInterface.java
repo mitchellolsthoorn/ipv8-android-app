@@ -15,7 +15,7 @@ public class AttestationRESTInterface {
         attestationRESTListener = listener;
     }
 
-    public void retrieve_peers(){
+    public synchronized void retrieve_peers(){
         Map<String, String> map = new HashMap<String, String>();
         map.put("type", "peers");
 
@@ -27,7 +27,7 @@ public class AttestationRESTInterface {
         request.execute();
     }
 
-    public void retrieve_outstanding(){
+    public synchronized void retrieve_outstanding(){
         Map<String, String> map = new HashMap<String, String>();
         map.put("type", "outstanding");
 
@@ -39,7 +39,7 @@ public class AttestationRESTInterface {
         request.execute();
     }
 
-    public void retrieve_verification_output(){
+    public synchronized void retrieve_verification_output(){
         Map<String, String> map = new HashMap<String, String>();
         map.put("type", "verification_output");
 
@@ -51,7 +51,7 @@ public class AttestationRESTInterface {
         request.execute();
     }
 
-    public void retrieve_attributes(String mid){
+    public synchronized void retrieve_attributes(String mid){
         Map<String, String> map = new HashMap<String, String>();
         map.put("type", "attributes");
         map.put("mid", mid);
@@ -64,34 +64,34 @@ public class AttestationRESTInterface {
         request.execute();
     }
 
-    public void put_request(String mid, String attribute_name){
+    public synchronized void put_request(String mid, String attribute_name){
         Map<String, String> map = new HashMap<String, String>();
         map.put("type", "request");
         map.put("mid", mid);
         map.put("attribute_name", attribute_name);
 
-        SingleShotRequest request = new SingleShotRequest("attestation", "GET", map){
+        SingleShotRequest request = new SingleShotRequest("attestation", "POST", map){
             protected void onPostExecute(String result) {
             }
         };
         request.execute();
     }
 
-    public void put_attest(String mid, String attribute_name, String attribute_value){
+    public synchronized void put_attest(String mid, String attribute_name, String attribute_value){
         Map<String, String> map = new HashMap<String, String>();
         map.put("type", "attest");
         map.put("mid", mid);
         map.put("attribute_name", attribute_name);
         map.put("attribute_value", attribute_value);
 
-        SingleShotRequest request = new SingleShotRequest("attestation", "GET", map){
+        SingleShotRequest request = new SingleShotRequest("attestation", "POST", map){
             protected void onPostExecute(String result) {
             }
         };
         request.execute();
     }
 
-    public void put_verify(String mid, String attribute_hash, String[] attribute_values){
+    public synchronized void put_verify(String mid, String attribute_hash, String[] attribute_values){
         Map<String, String> map = new HashMap<String, String>();
         map.put("type", "verify");
         map.put("mid", mid);
@@ -101,7 +101,7 @@ public class AttestationRESTInterface {
             attribute_values_str += ("".equals(attribute_values_str) ? "" : ",") + s;
         map.put("attribute_values", attribute_values_str);
 
-        SingleShotRequest request = new SingleShotRequest("attestation", "GET", map){
+        SingleShotRequest request = new SingleShotRequest("attestation", "POST", map){
             protected void onPostExecute(String result) {
             }
         };
