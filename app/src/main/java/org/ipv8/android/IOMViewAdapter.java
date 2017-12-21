@@ -2,6 +2,7 @@ package org.ipv8.android;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,8 +18,12 @@ import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import mehdi.sakout.fancybuttons.FancyButton;
 
@@ -30,6 +35,8 @@ public class IOMViewAdapter extends FilterableRecyclerViewAdapter {
     public static final int VIEW_TYPE_STRING = 1;   // String[] starting with "1"
     public static final int VIEW_TYPE_INPUT = 2;    // String[] starting with "2"
     public static final int VIEW_TYPE_BUTTONS = 3;  // String[] starting with "3"
+    public static final int VIEW_TYPE_CLICKABLE_ITEM = 4; // String[] starting with "4"
+    public static final int VIEW_TYPE_UNCLICKABLE_ITEM = 5; // String[] starting with "4"
 
     private OnClickListener _clickListener;
     private final IOMViewAdapterFilter _filter;
@@ -76,6 +83,10 @@ public class IOMViewAdapter extends FilterableRecyclerViewAdapter {
                     return VIEW_TYPE_INPUT;
                 case '3':
                     return VIEW_TYPE_BUTTONS;
+                case '4':
+                    return VIEW_TYPE_CLICKABLE_ITEM;
+                case '5':
+                    return VIEW_TYPE_UNCLICKABLE_ITEM;
             }
         }
         return VIEW_TYPE_UNKNOWN;
@@ -94,8 +105,12 @@ public class IOMViewAdapter extends FilterableRecyclerViewAdapter {
         if (viewType == VIEW_TYPE_INPUT){
             //view = new EditText(context);
             view = inflater.inflate(R.layout.fragment_input_description, null);
-        } else if (viewType == VIEW_TYPE_BUTTONS){
+        } else if (viewType == VIEW_TYPE_BUTTONS) {
             view = inflater.inflate(R.layout.fragment_input_button, null);
+        } else if (viewType == VIEW_TYPE_CLICKABLE_ITEM) {
+            view = inflater.inflate(R.layout.fragment_input_generic, null);
+        } else if (viewType == VIEW_TYPE_UNCLICKABLE_ITEM){
+            view = inflater.inflate(R.layout.fragment_input_generic_unclickable, null);
         } else {
             TextView text = new TextView(context);
             text.setPadding((int) (parent.getResources().getDisplayMetrics().density * 16), 0, 0, 0);
@@ -163,6 +178,31 @@ public class IOMViewAdapter extends FilterableRecyclerViewAdapter {
                     } else {
                         button2.setVisibility(View.GONE);
                     }
+                    break;
+                case '4':
+                    // VIEW_TYPE_CLICKABLE_ITEM
+                    CardView cardView = (CardView) viewHolder.itemView;
+                    RelativeLayout relLayout = (RelativeLayout) cardView.getChildAt(0);
+                    TextView title = (TextView) relLayout.getChildAt(0);
+                    TextView description = (TextView) relLayout.getChildAt(1);
+                    title.setText(((String[]) content)[1]);
+                    description.setText(((String[]) content)[2]);
+                    List<String> tag = new ArrayList<String>();
+                    if (((String[]) content).length > 3) {
+                        for (int i = 3; i < ((String[]) content).length; i++) {
+                            tag.add(((String[]) content)[i]);
+                        }
+                    }
+                    cardView.setTag(tag);
+                    break;
+                case '5':
+                    // VIEW_TYPE_UNCLICKABLE_ITEM
+                    CardView ucardView = (CardView) viewHolder.itemView;
+                    RelativeLayout urelLayout = (RelativeLayout) ucardView.getChildAt(0);
+                    TextView utitle = (TextView) urelLayout.getChildAt(0);
+                    TextView udescription = (TextView) urelLayout.getChildAt(1);
+                    utitle.setText(((String[]) content)[1]);
+                    udescription.setText(((String[]) content)[2]);
                     break;
                 default:
                     raw = true;

@@ -32,6 +32,8 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatDelegate;
+import android.support.v7.widget.CardView;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
@@ -83,7 +85,7 @@ import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
-public class MainActivity extends BaseActivity implements Handler.Callback, AttestationRESTListener, IOMViewAdapter.OnClickListener {
+public class MainActivity extends BaseActivity implements Handler.Callback, AttestationRESTListener {
 
     public static final int ADD_ACCOUNT_ACTIVITY_REQUEST_CODE = 103;
     public static final int INPUT_REQUIRED_ACTIVITY_REQUEST_CODE = 105;
@@ -222,14 +224,6 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
             showLoading(false);
             enableNavigationMenu(true);
             switchFragment(ListFragment.class);
-
-            Fragment fragment = getCurrentFragment();
-            if (fragment instanceof ListFragment) {
-                ListFragment listFragment = (ListFragment) fragment;
-                if (!this.equals(listFragment.getAdapter().getClickListener())){
-                    listFragment.getAdapter().setClickListener(this);
-                }
-            }
             restInterface = new AttestationRESTInterface(this);
             return true;
         }
@@ -522,7 +516,6 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
                 restInterface.retrieve_verification_output();
                 break;
         }
-        // TODO On click peer in list go to view*Dialog() with subject/subjectAttribute
     }
 
     private void gotPeerResults(List<String> peers){
@@ -532,13 +525,19 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
                 case ATTESTEE:
                     ArrayList<Object> list = new ArrayList<Object>();
                     list.add("List of found peers:");
-                    list.addAll(peers);
+                    for (String p: peers){
+                        list.add(new String[] {"4", p, "", p});
+                    }
+                    list.add(new String[] {"4", "DEBUG PEER", "Not actually a person.", "some_member_id"}); // TODO
                     updateListItems(list);
                     break;
                 case VERIFIER:
                     ArrayList<Object> vlist = new ArrayList<Object>();
                     vlist.add("List of found peers:");
-                    vlist.addAll(peers);
+                    for (String p: peers){
+                        vlist.add(new String[] {"4", p, "", p});
+                    }
+                    vlist.add(new String[] {"4", "DEBUG PEER", "hairColor, age, shoeSize", "some_member_id"}); // TODO
                     vlist.add("List of attribute verifications:");
                     for (Map.Entry<String, List<Map.Entry<String, String>>> entry: verificationOutput.entrySet()){
                         String hash = entry.getKey();
@@ -548,11 +547,15 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
                             String attributeName = mEntry.getKey().getValue();
                             String attributeHash = mEntry.getValue();
                             if (attributeHash.equals(hash)){
-                                vlist.add(mid + " " + attributeName + " equals " + vmatch.getKey() + "? " + vmatch.getValue());
+                                vlist.add(new String[] {"4",
+                                                        mid,
+                                                        attributeName + " equals " + vmatch.getKey() + "? " + vmatch.getValue()
+                                });
                                 break;
                             }
                         }
                     }
+                    vlist.add(new String[] {"5", "DEBUG PEER", "hairColor equals brown? 0.9998734"}); // TODO
                     updateListItems(vlist);
                     break;
             }
@@ -568,6 +571,7 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
                     for (Map.Entry<String, String> request: outstandingRequests){
                         list.add(request.getKey() + ": " + request.getValue());
                     }
+                    list.add(new String[] {"4", "DEBUG PEER", "hairColor", "some_member_id", "hairColor"}); // TODO
                     updateListItems(list);
                 case ATTESTEE:
                     break;
@@ -579,7 +583,7 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
 
     public void viewAttestorDialog(){
         List<Object> list = Arrays.asList(new Object[] {
-                new String[] {"2", "Someone wants you to measure something.", "Measurement:"},
+                new String[] {"2", subject + " wants you to measure " + subjectAttribute + ".", "Measurement:"},
                 new String[] {"3", "Submit", "Ignore"}
         });
         updateListItems(list);
@@ -587,7 +591,7 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
 
     public void viewAttesteeDialog(){
         List<Object> list = Arrays.asList(new Object[] {
-                new String[] {"2", "Ask someone to attest.", "Attribute:"},
+                new String[] {"2", "Ask " + subject + " to attest.", "Attribute:"},
                 new String[] {"3", "Send", "Cancel"}
                 //new String[] {"1", "Allow someone to verify something."}, // TODO
                 //new String[] {"3", "Yes", "No"}
@@ -597,7 +601,7 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
 
     public void viewVerifierDialog(){
         List<Object> list = Arrays.asList(new Object[] {
-                new String[] {"2", "Ask someone to verify.", "Attribute:"},
+                new String[] {"2", "Ask " + subject + " to verify.", "Attribute:"},
                 new String[] {"2", "Required value:"},
                 new String[] {"3", "Send", "Cancel"}
         });
@@ -639,6 +643,27 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
                 break;
             case VERIFIER:
                 onVerifierButtonClicked(button.getText().toString());
+                break;
+        }
+    }
+
+    public void onGenericItemClicked(View view){
+        CardView item = (CardView) view;
+        List<String> tag = (List<String>) item.getTag();
+
+        switch (_role){
+            case ATTESTOR:
+                subject = tag.get(0);
+                subjectAttribute = tag.get(1);
+                viewAttestorDialog();
+                break;
+            case ATTESTEE:
+                subject = tag.get(0);
+                viewAttesteeDialog();
+                break;
+            case VERIFIER:
+                subject = tag.get(0);
+                viewVerifierDialog();
                 break;
         }
     }
