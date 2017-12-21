@@ -171,12 +171,23 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
         _eventHandler = null;
     }
 
+    private void setUnknownRole(boolean visible){
+        View view = findViewById(R.id.unknown_role_text);
+        if (view != null){
+            if (visible)
+                view.setVisibility(View.VISIBLE);
+            else
+                view.setVisibility(View.GONE);
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public boolean handleMessage(Message message) {
         if (isLoading){
+            setUnknownRole(true);
             isLoading = false;
             showLoading(false);
             enableNavigationMenu(true);
@@ -459,6 +470,7 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
     }
 
     public void navAttestorClicked(MenuItem item) {
+        setUnknownRole(false);
         Log.v("NAVIGATION", "Clicked Attestor!");
         _role = Role.ATTESTOR;
         List<Object> list = Arrays.asList(new Object[] {
@@ -470,6 +482,7 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
     }
 
     public void navAttesteeClicked(MenuItem item) {
+        setUnknownRole(false);
         Log.v("NAVIGATION", "Clicked Attestee!");
         _role = Role.ATTESTEE;
         List<Object> list = Arrays.asList(new Object[] {
@@ -483,6 +496,7 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
     }
 
     public void navVerifierClicked(MenuItem item) {
+        setUnknownRole(false);
         Log.v("NAVIGATION", "Clicked Verifier!");
         _role = Role.VERIFIER;
         List<Object> list = Arrays.asList(new Object[] {
