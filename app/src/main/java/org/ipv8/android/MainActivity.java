@@ -758,6 +758,16 @@ public class MainActivity extends BaseActivity implements Handler.Callback, Atte
         showLoading(R.string.status_shutting_down);
 
         EventStream.closeEventStream();
+
+        killService();
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        System.exit(0);
     }
 
     protected void startService() {
