@@ -393,14 +393,6 @@ public class MyUtils {
         return out.toString();
     }
 
-    public static void onError(BaseFragment f, String msg, Throwable e) {
-        Log.e(f.getClass().getSimpleName(), msg, e);
-        Toast.makeText(f.getContext(), R.string.exception_http_500, Toast.LENGTH_SHORT).show();
-        if (f instanceof ViewFragment) {
-            ((ViewFragment) f).showLoading(false);
-        }
-    }
-
     public static Observable<?> twoSecondsDelay(Observable<? extends Throwable> errors) {
         return errors.flatMap(e -> {
             if (e instanceof HttpException) {

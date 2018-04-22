@@ -22,9 +22,6 @@ import rx.subscriptions.CompositeSubscription;
  */
 public abstract class BaseActivity extends AppCompatActivity {
 
-    @BindView(R.id.toolbar)
-    Toolbar toolbar;
-
     protected CompositeSubscription rxSubs;
     protected CompositeSubscription rxMenuSubs;
 
@@ -48,9 +45,6 @@ public abstract class BaseActivity extends AppCompatActivity {
         super.onDestroy();
         Log.v(getClass().getSimpleName(), "onDestroy");
 
-        // Memory leak detection
-        MyUtils.getRefWatcher(this).watch(this);
-
         rxMenuSubs.unsubscribe();
         rxMenuSubs = null;
         rxSubs.unsubscribe();
@@ -67,9 +61,6 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         ButterKnife.bind(this);
 
-        // The action bar will automatically handle clicks on the Home/Up button,
-        // so long as you specify a parent activity in AndroidManifest.xml
-        setSupportActionBar(toolbar);
         ActionBar actionbar = getSupportActionBar();
         if (actionbar != null && layoutResID != R.layout.activity_main) {
             actionbar.setDisplayHomeAsUpEnabled(true);
