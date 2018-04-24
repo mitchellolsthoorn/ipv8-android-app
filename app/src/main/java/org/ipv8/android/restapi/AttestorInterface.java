@@ -6,13 +6,12 @@ import com.google.gson.JsonParser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class AttestorInterface{
 
-    static class AttestationRequest{
+    public static class AttestationRequest{
         private final String identifier;
         private final String attributeName;
 
@@ -31,7 +30,7 @@ public class AttestorInterface{
     }
 
     private AttestationRESTInterface restInterface;
-    private Lock attestationRequestLock = new ReentrantLock();
+    private Semaphore attestationRequestLock = new Semaphore(1);
     private List<AttestorInterface.AttestationRequest> attestationRequestResult = null;
 
     public AttestorInterface(AttestationRESTInterface restInterface){
@@ -39,11 +38,16 @@ public class AttestorInterface{
     }
 
     public List<AttestorInterface.AttestationRequest> getAttestationRequests(){
+        try {
+            this.attestationRequestLock.acquire();
+        } catch (InterruptedException e){
+            return null;
+        }
         this.restInterface.retrieve_outstanding();
-        this.attestationRequestLock.lock();
         List<AttestorInterface.AttestationRequest> result = null;
         try {
-            this.attestationRequestLock.tryLock(5, TimeUnit.SECONDS);
+            this.attestationRequestLock.tryAcquire(5, TimeUnit.SECONDS);
+            this.attestationRequestLock.release();
             result = this.attestationRequestResult;
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -54,15 +58,18 @@ public class AttestorInterface{
 
     public void onOutstanding(String s) {
         List<AttestorInterface.AttestationRequest> out = new ArrayList<AttestorInterface.AttestationRequest>();
-        JsonArray list = (JsonArray) new JsonParser().parse(s);
-        if(list != null && list.size() > 0) {
-            for (JsonElement rawTuple : list) {
-                JsonArray tuple = (JsonArray) rawTuple;
-                out.add(new AttestorInterface.AttestationRequest(tuple.get(0).getAsString(), tuple.get(1).getAsString()));
+        try {
+            JsonArray list = (JsonArray) new JsonParser().parse(s);
+            if (list != null && list.size() > 0) {
+                for (JsonElement rawTuple : list) {
+                    JsonArray tuple = (JsonArray) rawTuple;
+                    out.add(new AttestorInterface.AttestationRequest(tuple.get(0).getAsString(), tuple.get(1).getAsString()));
+                }
             }
+        } catch (ClassCastException e) {
         }
         this.attestationRequestResult = out;
-        this.attestationRequestLock.unlock();
+        this.attestationRequestLock.release();
     }
 
     public void sendAttestation(String identifier, String attributeName, String attributeValue){
