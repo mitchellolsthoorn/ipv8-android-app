@@ -10,13 +10,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class AttesteeInterface{
 
-    static class Attribute{
+    public static class Attribute{
         private final String name;
         private final String hash;
 
@@ -35,9 +34,9 @@ public class AttesteeInterface{
     }
 
     private AttestationRESTInterface restInterface;
-    private Lock getPeersLock = new ReentrantLock();
+    private Semaphore getPeersLock = new Semaphore(1);
     private List<String> getPeersResult = null;
-    private Lock getMyAttributesLock = new ReentrantLock();
+    private Semaphore getMyAttributesLock = new Semaphore(1);
     private List<AttesteeInterface.Attribute> getMyAttributesResult = null;
 
     public AttesteeInterface(AttestationRESTInterface restInterface){
@@ -45,11 +44,16 @@ public class AttesteeInterface{
     }
 
     public List<String> getPeerIdentifiers(){
+        try {
+            this.getPeersLock.acquire();
+        } catch (InterruptedException e){
+            return null;
+        }
         this.restInterface.retrieve_outstanding();
-        this.getPeersLock.lock();
         List<String> result = null;
         try {
-            this.getPeersLock.tryLock(5, TimeUnit.SECONDS);
+            this.getPeersLock.tryAcquire(5, TimeUnit.SECONDS);
+            this.getPeersLock.release();
             result = this.getPeersResult;
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -65,7 +69,7 @@ public class AttesteeInterface{
             restInterface.retrieve_attributes(mid);
         }
         this.getPeersResult = Arrays.asList(knownMids);
-        this.getPeersLock.unlock();
+        this.getPeersLock.release();
     }
 
     public void requestAttestation(String identifier, String attributeName){
@@ -73,11 +77,16 @@ public class AttesteeInterface{
     }
 
     public List<AttesteeInterface.Attribute> getMyAttributes(){
+        try {
+            this.getMyAttributesLock.acquire();
+        } catch (InterruptedException e){
+            return null;
+        }
         this.restInterface.retrieve_outstanding();
-        this.getMyAttributesLock.lock();
         List<AttesteeInterface.Attribute> result = null;
         try {
-            this.getMyAttributesLock.tryLock(5, TimeUnit.SECONDS);
+            this.getMyAttributesLock.tryAcquire(5, TimeUnit.SECONDS);
+            this.getMyAttributesLock.release();
             result = this.getMyAttributesResult;
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -97,6 +106,6 @@ public class AttesteeInterface{
             }
         }
         this.getMyAttributesResult = out;
-        this.getMyAttributesLock.unlock();
+        this.getMyAttributesLock.release();
     }
 }

@@ -9,9 +9,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class VerifierInterface {
 
@@ -38,7 +37,7 @@ public class VerifierInterface {
     }
 
     private AttestationRESTInterface restInterface;
-    private Lock getVerificationsLock = new ReentrantLock();
+    private Semaphore getVerificationsLock = new Semaphore(1);
     private Map<String, List<Verification>> getVerificationsResult = null;
 
     public VerifierInterface(AttestationRESTInterface restInterface){
@@ -50,11 +49,16 @@ public class VerifierInterface {
     }
 
     public Map<String, List<Verification>> getVerifications(){
+        try {
+            this.getVerificationsLock.acquire();
+        } catch (InterruptedException e){
+            return null;
+        }
         this.restInterface.retrieve_verification_output();
-        this.getVerificationsLock.lock();
         Map<String, List<Verification>> result = null;
         try {
-            this.getVerificationsLock.tryLock(5, TimeUnit.SECONDS);
+            this.getVerificationsLock.tryAcquire(5, TimeUnit.SECONDS);
+            this.getVerificationsLock.release();
             result = this.getVerificationsResult;
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -83,6 +87,6 @@ public class VerifierInterface {
             out.put(rawList.getKey(), subout);
         }
         this.getVerificationsResult = out;
-        this.getVerificationsLock.unlock();
+        this.getVerificationsLock.release();
     }
 }
