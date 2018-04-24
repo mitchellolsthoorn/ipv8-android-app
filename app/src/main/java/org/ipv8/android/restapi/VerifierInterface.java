@@ -57,7 +57,7 @@ public class VerifierInterface {
         this.restInterface.retrieve_verification_output();
         Map<String, List<Verification>> result = null;
         try {
-            this.getVerificationsLock.tryAcquire(5, TimeUnit.SECONDS);
+            this.getVerificationsLock.tryAcquire(30, TimeUnit.SECONDS);
             this.getVerificationsLock.release();
             result = this.getVerificationsResult;
         } catch (InterruptedException e) {
