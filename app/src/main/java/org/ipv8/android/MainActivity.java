@@ -3,13 +3,19 @@ package org.ipv8.android;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatDelegate;
 import android.text.TextUtils;
+import android.view.View;
+import android.widget.Button;
 
+import org.ipv8.android.restapi.AttesteeInterface;
 import org.ipv8.android.service.IPV8Service;
+
+import java.util.List;
 
 public class MainActivity extends BaseActivity {
 
@@ -74,5 +80,38 @@ public class MainActivity extends BaseActivity {
         } else {
             startService();
         }
+    }
+
+    private void setActivateButton(boolean value, boolean success) {
+        int color = success ? Color.GREEN : Color.RED;
+        ((Button) findViewById(R.id.button_id)).setEnabled(value);
+        if (value)
+            ((Button) findViewById(R.id.button_id)).setBackgroundColor(color);
+    }
+
+    public void buttonActivate(View v){
+        setActivateButton(false, false);
+
+        AttestationInterface api = new AttestationInterface();
+        AttesteeInterface attesteeAPI = api.getAttesteeInterface();
+
+        List<String> identifiers = attesteeAPI.getPeerIdentifiers();
+        if ((identifiers == null) || (identifiers.size() == 0)) {
+            // No other people found
+            setActivateButton(true, false);
+            return;
+        }
+
+        for (String id : identifiers)
+            attesteeAPI.requestAttestation(id, "QR");
+
+        Button button = ((Button) findViewById(R.id.button_id));
+        button.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                List<AttesteeInterface.Attribute> attributes = attesteeAPI.getMyAttributes();
+                setActivateButton(true, attributes.size() > 0);
+            }
+        }, 5000);
     }
 }
