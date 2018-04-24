@@ -83,35 +83,44 @@ public class MainActivity extends BaseActivity {
     }
 
     private void setActivateButton(boolean value, boolean success) {
-        int color = success ? Color.GREEN : Color.RED;
-        ((Button) findViewById(R.id.button_id)).setEnabled(value);
-        if (value)
-            ((Button) findViewById(R.id.button_id)).setBackgroundColor(color);
+        MainActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                int color = success ? Color.GREEN : Color.RED;
+                ((Button) findViewById(R.id.button_id)).setEnabled(value);
+                if (value)
+                    ((Button) findViewById(R.id.button_id)).setBackgroundColor(color);
+            }
+        });
     }
 
     public void buttonActivate(View v){
         setActivateButton(false, false);
+        Thread t = new Thread(){
+            public void run(){
+                AttestationInterface api = new AttestationInterface();
+                AttesteeInterface attesteeAPI = api.getAttesteeInterface();
 
-        AttestationInterface api = new AttestationInterface();
-        AttesteeInterface attesteeAPI = api.getAttesteeInterface();
+                List<String> identifiers = attesteeAPI.getPeerIdentifiers();
+                if ((identifiers == null) || (identifiers.size() == 0)) {
+                    // No other people found
+                    setActivateButton(true, false);
+                    return;
+                }
 
-        List<String> identifiers = attesteeAPI.getPeerIdentifiers();
-        if ((identifiers == null) || (identifiers.size() == 0)) {
-            // No other people found
-            setActivateButton(true, false);
-            return;
-        }
+                for (String id : identifiers)
+                    attesteeAPI.requestAttestation(id, "QR");
 
-        for (String id : identifiers)
-            attesteeAPI.requestAttestation(id, "QR");
-
-        Button button = ((Button) findViewById(R.id.button_id));
-        button.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                List<AttesteeInterface.Attribute> attributes = attesteeAPI.getMyAttributes();
-                setActivateButton(true, attributes.size() > 0);
+                Button button = ((Button) findViewById(R.id.button_id));
+                button.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        List<AttesteeInterface.Attribute> attributes = attesteeAPI.getMyAttributes();
+                        setActivateButton(true, attributes.size() > 0);
+                    }
+                }, 5000);
             }
-        }, 5000);
+        };
+        t.start();
     }
 }
