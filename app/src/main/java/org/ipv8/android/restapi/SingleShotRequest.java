@@ -7,8 +7,10 @@ import java.io.IOException;
 import java.util.Map;
 
 import okhttp3.HttpUrl;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public abstract class SingleShotRequest extends AsyncTask<Object, Object, String> {
@@ -20,7 +22,12 @@ public abstract class SingleShotRequest extends AsyncTask<Object, Object, String
 
     public SingleShotRequest(String endpoint, String method, Map<String, String> values) {
         Request.Builder req_builder = new Request.Builder();
-        req_builder.method(method, null);
+
+        RequestBody body = null;
+        if ("POST".equals(method))
+            body = RequestBody.create(MediaType.parse("text/plain"), "");
+
+        req_builder.method(method, body);
 
         HttpUrl.Builder http_builder = new HttpUrl.Builder();
         http_builder.scheme("http");
