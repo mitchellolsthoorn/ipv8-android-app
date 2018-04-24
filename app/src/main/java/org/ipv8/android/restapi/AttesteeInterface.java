@@ -49,7 +49,7 @@ public class AttesteeInterface{
         } catch (InterruptedException e){
             return null;
         }
-        this.restInterface.retrieve_outstanding();
+        this.restInterface.retrieve_peers();
         List<String> result = null;
         try {
             this.getPeersLock.tryAcquire(5, TimeUnit.SECONDS);
