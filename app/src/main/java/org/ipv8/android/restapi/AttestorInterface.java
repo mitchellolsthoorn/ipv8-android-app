@@ -46,7 +46,7 @@ public class AttestorInterface{
         this.restInterface.retrieve_outstanding();
         List<AttestorInterface.AttestationRequest> result = null;
         try {
-            this.attestationRequestLock.tryAcquire(5, TimeUnit.SECONDS);
+            this.attestationRequestLock.tryAcquire(30, TimeUnit.SECONDS);
             this.attestationRequestLock.release();
             result = this.attestationRequestResult;
         } catch (InterruptedException e) {

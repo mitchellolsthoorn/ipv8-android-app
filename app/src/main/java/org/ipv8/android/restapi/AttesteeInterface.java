@@ -52,7 +52,7 @@ public class AttesteeInterface{
         this.restInterface.retrieve_peers();
         List<String> result = null;
         try {
-            this.getPeersLock.tryAcquire(5, TimeUnit.SECONDS);
+            this.getPeersLock.tryAcquire(30, TimeUnit.SECONDS);
             this.getPeersLock.release();
             result = this.getPeersResult;
         } catch (InterruptedException e) {
@@ -65,10 +65,14 @@ public class AttesteeInterface{
     public void onPeers(String s) {
         Gson gson = new Gson();
         String[] knownMids = gson.fromJson(s, String[].class);
-        for (String mid: knownMids){
-            restInterface.retrieve_attributes(mid);
+        if (knownMids != null){
+            for (String mid: knownMids){
+                restInterface.retrieve_attributes(mid);
+            }
+            this.getPeersResult = Arrays.asList(knownMids);
+        } else {
+            this.getPeersResult = new ArrayList<String>();
         }
-        this.getPeersResult = Arrays.asList(knownMids);
         this.getPeersLock.release();
     }
 
@@ -85,7 +89,7 @@ public class AttesteeInterface{
         this.restInterface.retrieve_outstanding();
         List<AttesteeInterface.Attribute> result = null;
         try {
-            this.getMyAttributesLock.tryAcquire(5, TimeUnit.SECONDS);
+            this.getMyAttributesLock.tryAcquire(30, TimeUnit.SECONDS);
             this.getMyAttributesLock.release();
             result = this.getMyAttributesResult;
         } catch (InterruptedException e) {
