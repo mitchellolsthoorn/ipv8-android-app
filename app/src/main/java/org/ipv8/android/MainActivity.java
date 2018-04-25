@@ -9,6 +9,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatDelegate;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -80,6 +81,13 @@ public class MainActivity extends BaseActivity {
         } else {
             startService();
         }
+
+        Thread t = new Thread() {
+            public void run() {
+                updateAttributes(new AttestationInterface().getAttesteeInterface(), 0);
+            }
+        };
+        t.start();
     }
 
     private void setActivateButton(boolean value, boolean success) {
@@ -94,6 +102,16 @@ public class MainActivity extends BaseActivity {
         });
     }
 
+    private void updateAttributes(AttesteeInterface attesteeAPI, int after) {
+        try {
+            Thread.sleep(after);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        List<AttesteeInterface.Attribute> attributes = attesteeAPI.getMyAttributes();
+        setActivateButton(true, attributes == null ? false : attributes.size() > 0);
+    }
+
     public void buttonActivate(View v){
         setActivateButton(false, false);
         Thread t = new Thread(){
@@ -104,21 +122,15 @@ public class MainActivity extends BaseActivity {
                 List<String> identifiers = attesteeAPI.getPeerIdentifiers();
                 if ((identifiers == null) || (identifiers.size() == 0)) {
                     // No other people found
-                    setActivateButton(true, false);
+                    Log.e("Peers", "No peers found!");
+                    updateAttributes(attesteeAPI, 0);
                     return;
                 }
 
                 for (String id : identifiers)
                     attesteeAPI.requestAttestation(id, "QR");
 
-                Button button = ((Button) findViewById(R.id.button_id));
-                button.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        List<AttesteeInterface.Attribute> attributes = attesteeAPI.getMyAttributes();
-                        setActivateButton(true, attributes.size() > 0);
-                    }
-                }, 5000);
+                updateAttributes(attesteeAPI, 5);
             }
         };
         t.start();

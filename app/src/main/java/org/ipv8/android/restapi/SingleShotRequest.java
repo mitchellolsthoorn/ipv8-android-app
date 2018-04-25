@@ -5,6 +5,7 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
@@ -17,10 +18,16 @@ public abstract class SingleShotRequest extends AsyncTask<Object, Object, String
 
     private static final String BASE_URL = "http://127.0.0.1:8085";
 
-    private final OkHttpClient client = new OkHttpClient();
+    private final OkHttpClient client; // = new OkHttpClient();
     private final Request request;
 
     public SingleShotRequest(String endpoint, String method, Map<String, String> values) {
+        OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .writeTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS);
+        client = clientBuilder.build();
+
         Request.Builder req_builder = new Request.Builder();
 
         RequestBody body = null;
