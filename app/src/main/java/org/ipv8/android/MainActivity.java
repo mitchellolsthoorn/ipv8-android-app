@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import org.ipv8.android.restapi.AttesteeInterface;
 import org.ipv8.android.service.IPV8Service;
@@ -67,6 +68,15 @@ public class MainActivity extends BaseActivity {
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode == WRITE_STORAGE_PERMISSION_REQUEST_CODE) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startService();
+            }
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -84,36 +94,49 @@ public class MainActivity extends BaseActivity {
 
         Thread t = new Thread() {
             public void run() {
-                updateAttributes(new AttestationInterface().getAttesteeInterface(), 0);
+                while (true) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    updatePeerCount();
+                    updateAttributes();
+                }
             }
         };
+        t.setDaemon(true);
         t.start();
     }
 
-    private void setActivateButton(boolean value, boolean success) {
+    private void updateAttributes() {
+        AttestationInterface api = new AttestationInterface();
+        AttesteeInterface attesteeAPI = api.getAttesteeInterface();
+        List<AttesteeInterface.Attribute> attributes = attesteeAPI.getMyAttributes();
+        boolean hasAttribute = attributes == null ? false : attributes.size() > 0;
         MainActivity.this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                int color = success ? Color.GREEN : Color.RED;
-                ((Button) findViewById(R.id.button_id)).setEnabled(value);
-                if (value)
-                    ((Button) findViewById(R.id.button_id)).setBackgroundColor(color);
+                int color = hasAttribute ? Color.GREEN : Color.RED;
+                ((Button) findViewById(R.id.button_id)).setBackgroundColor(color);
             }
         });
     }
 
-    private void updateAttributes(AttesteeInterface attesteeAPI, int after) {
-        try {
-            Thread.sleep(after);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        List<AttesteeInterface.Attribute> attributes = attesteeAPI.getMyAttributes();
-        setActivateButton(true, attributes == null ? false : attributes.size() > 0);
+    private void updatePeerCount() {
+        AttestationInterface api = new AttestationInterface();
+        AttesteeInterface attesteeAPI = api.getAttesteeInterface();
+        List<String> identifiers = attesteeAPI.getPeerIdentifiers();
+        int peerCount = identifiers == null ? 0 : identifiers.size();
+        MainActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((TextView) findViewById(R.id.textView)).setText("Peers: " + peerCount);
+            }
+        });
     }
 
     public void buttonActivate(View v){
-        setActivateButton(false, false);
         Thread t = new Thread(){
             public void run(){
                 AttestationInterface api = new AttestationInterface();
@@ -123,14 +146,11 @@ public class MainActivity extends BaseActivity {
                 if ((identifiers == null) || (identifiers.size() == 0)) {
                     // No other people found
                     Log.e("Peers", "No peers found!");
-                    updateAttributes(attesteeAPI, 0);
                     return;
                 }
 
                 for (String id : identifiers)
                     attesteeAPI.requestAttestation(id, "QR");
-
-                updateAttributes(attesteeAPI, 5);
             }
         };
         t.start();
