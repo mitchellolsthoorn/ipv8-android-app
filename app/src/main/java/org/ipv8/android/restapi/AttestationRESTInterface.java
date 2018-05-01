@@ -60,6 +60,18 @@ public class AttestationRESTInterface {
         request.execute();
     }
 
+    public void retrieve_attributes(){
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("type", "attributes");
+
+        SingleShotRequest request = new SingleShotRequest("attestation", "GET", map){
+            protected void onPostExecute(String result) {
+                attestationRESTListener.onAttributes(result);
+            }
+        };
+        request.execute();
+    }
+
     public void put_request(String mid, String attribute_name){
         Map<String, String> map = new HashMap<String, String>();
         map.put("type", "request");

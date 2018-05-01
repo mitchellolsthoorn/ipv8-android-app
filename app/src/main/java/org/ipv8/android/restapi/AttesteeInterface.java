@@ -5,6 +5,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
+import org.json.JSONArray;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -86,7 +88,7 @@ public class AttesteeInterface{
         } catch (InterruptedException e){
             return null;
         }
-        this.restInterface.retrieve_outstanding();
+        this.restInterface.retrieve_attributes();
         List<AttesteeInterface.Attribute> result = null;
         try {
             this.getMyAttributesLock.tryAcquire(30, TimeUnit.SECONDS);
@@ -100,16 +102,18 @@ public class AttesteeInterface{
     }
 
     public void onAttributes(String s) {
-        JsonArray list = (JsonArray) new JsonParser().parse(s);
-        Map<Map.Entry<String, String>, String> attributeHashes = new HashMap<Map.Entry<String, String>, String>();
-        ArrayList<AttesteeInterface.Attribute> out = new ArrayList<AttesteeInterface.Attribute>();
-        if(list != null && list.size() > 0) {
-            for (JsonElement rawTuple : list) {
-                JsonArray tuple = (JsonArray) rawTuple;
-                out.add(new AttesteeInterface.Attribute(tuple.get(0).getAsString(), tuple.get(1).getAsString()));
+        JsonElement element = new JsonParser().parse(s);
+        if (element instanceof JsonArray) {
+            JsonArray list = (JsonArray) element;
+            ArrayList<AttesteeInterface.Attribute> out = new ArrayList<AttesteeInterface.Attribute>();
+            if (list != null && list.size() > 0) {
+                for (JsonElement rawTuple : list) {
+                    JsonArray tuple = (JsonArray) rawTuple;
+                    out.add(new AttesteeInterface.Attribute(tuple.get(0).getAsString(), tuple.get(1).getAsString()));
+                }
             }
+            this.getMyAttributesResult = out;
         }
-        this.getMyAttributesResult = out;
         this.getMyAttributesLock.release();
     }
 }
