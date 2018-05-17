@@ -79,7 +79,11 @@ public class AttesteeInterface{
     }
 
     public void requestAttestation(String identifier, String attributeName){
-        this.restInterface.put_request(identifier, attributeName);
+        this.restInterface.put_request(identifier, attributeName, null);
+    }
+
+    public void requestAttestation(String identifier, String attributeName, Map<String, String> metadata){
+        this.restInterface.put_request(identifier, attributeName, metadata);
     }
 
     public List<AttesteeInterface.Attribute> getMyAttributes(){
