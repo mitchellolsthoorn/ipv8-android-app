@@ -1,5 +1,8 @@
 package org.ipv8.android.restapi;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -72,11 +75,15 @@ public class AttestationRESTInterface {
         request.execute();
     }
 
-    public void put_request(String mid, String attribute_name){
+    public void put_request(String mid, String attribute_name, Map<String, String> metadata){
         Map<String, String> map = new HashMap<String, String>();
         map.put("type", "request");
         map.put("mid", mid);
         map.put("attribute_name", attribute_name);
+        if (metadata != null){
+            Gson gson = new GsonBuilder().create();
+            map.put("metadata", gson.toJson(metadata));
+        }
 
         SingleShotRequest request = new SingleShotRequest("attestation", "POST", map){
             protected void onPostExecute(String result) {
