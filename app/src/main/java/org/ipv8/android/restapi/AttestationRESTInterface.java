@@ -1,5 +1,7 @@
 package org.ipv8.android.restapi;
 
+import android.util.Base64;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -82,7 +84,7 @@ public class AttestationRESTInterface {
         map.put("attribute_name", attribute_name);
         if (metadata != null){
             Gson gson = new GsonBuilder().create();
-            map.put("metadata", gson.toJson(metadata));
+            map.put("metadata", Base64.encodeToString(gson.toJson(metadata).getBytes(), Base64.DEFAULT));
         }
 
         SingleShotRequest request = new SingleShotRequest("attestation", "POST", map){
