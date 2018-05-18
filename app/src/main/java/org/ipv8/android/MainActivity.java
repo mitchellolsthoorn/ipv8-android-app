@@ -17,6 +17,7 @@ import android.widget.TextView;
 import org.ipv8.android.restapi.AttesteeInterface;
 import org.ipv8.android.service.IPV8Service;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class MainActivity extends BaseActivity {
@@ -149,8 +150,11 @@ public class MainActivity extends BaseActivity {
                     return;
                 }
 
+                HashMap<String, String> metadata = new HashMap<String, String>();
+                metadata.put("psn", "1234567890");
+
                 for (String id : identifiers)
-                    attesteeAPI.requestAttestation(id, "QR");
+                    attesteeAPI.requestAttestation(id, "QR", metadata);
             }
         };
         t.start();
