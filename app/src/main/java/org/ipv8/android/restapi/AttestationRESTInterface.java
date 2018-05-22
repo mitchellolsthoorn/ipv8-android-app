@@ -16,6 +16,17 @@ public class AttestationRESTInterface {
         attestationRESTListener = listener;
     }
 
+    public void drop_identity(){
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("type", "drop_identity");
+
+        SingleShotRequest request = new SingleShotRequest("attestation", "GET", map){
+            protected void onPostExecute(String result) {
+            }
+        };
+        request.execute();
+    }
+
     public void retrieve_peers(){
         Map<String, String> map = new HashMap<String, String>();
         map.put("type", "peers");
