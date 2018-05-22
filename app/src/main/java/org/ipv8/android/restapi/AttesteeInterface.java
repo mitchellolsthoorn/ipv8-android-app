@@ -45,6 +45,13 @@ public class AttesteeInterface{
         this.restInterface = restInterface;
     }
 
+    /**
+     * Completely remove all of our gathered identity data.
+     */
+    public void dropIdentity(){
+        this.restInterface.drop_identity();
+    }
+
     public List<String> getPeerIdentifiers(){
         try {
             this.getPeersLock.acquire();
