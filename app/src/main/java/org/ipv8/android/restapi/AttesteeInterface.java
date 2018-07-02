@@ -20,10 +20,12 @@ public class AttesteeInterface{
     public static class Attribute{
         private final String name;
         private final String hash;
+        private final Map<String, String> metadata;
 
-        public Attribute(String name, String hash){
+        public Attribute(String name, String hash, Map<String, String> metadata){
             this.name = name;
             this.hash = hash;
+            this.metadata = metadata;
         }
 
         public String getName(){
@@ -32,6 +34,10 @@ public class AttesteeInterface{
 
         public String getHash(){
             return this.hash;
+        }
+
+        public Map<String, String> getMetadata(){
+            return this.metadata;
         }
     }
 
@@ -120,7 +126,14 @@ public class AttesteeInterface{
             if (list != null && list.size() > 0) {
                 for (JsonElement rawTuple : list) {
                     JsonArray tuple = (JsonArray) rawTuple;
-                    out.add(new AttesteeInterface.Attribute(tuple.get(0).getAsString(), tuple.get(1).getAsString()));
+                    HashMap<String, String> metadata = new HashMap<String, String>();
+                    for (Map.Entry<String, JsonElement> entry: tuple.get(2).getAsJsonObject().entrySet()){
+                        metadata.put(entry.getKey(), entry.getValue().getAsString());
+                    }
+                    out.add(new AttesteeInterface.Attribute(tuple.get(0).getAsString(),
+                            tuple.get(1).getAsString(),
+                            metadata
+                            ));
                 }
             }
             this.getMyAttributesResult = out;
