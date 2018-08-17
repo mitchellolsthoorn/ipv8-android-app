@@ -21,11 +21,13 @@ public class AttesteeInterface{
         private final String name;
         private final String hash;
         private final Map<String, String> metadata;
+        private final String attester;
 
-        public Attribute(String name, String hash, Map<String, String> metadata){
+        public Attribute(String name, String hash, Map<String, String> metadata, String attester){
             this.name = name;
             this.hash = hash;
             this.metadata = metadata;
+            this.attester = attester;
         }
 
         public String getName(){
@@ -38,6 +40,10 @@ public class AttesteeInterface{
 
         public Map<String, String> getMetadata(){
             return this.metadata;
+        }
+
+        public String getAttester(){
+            return this.attester;
         }
     }
 
@@ -132,7 +138,8 @@ public class AttesteeInterface{
                     }
                     out.add(new AttesteeInterface.Attribute(tuple.get(0).getAsString(),
                             tuple.get(1).getAsString(),
-                            metadata
+                            metadata,
+                            tuple.get(3).getAsString()
                             ));
                 }
             }
