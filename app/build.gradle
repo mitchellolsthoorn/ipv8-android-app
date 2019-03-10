@@ -77,10 +77,15 @@ model {
                 // References prebuilt libraries defined below
                 jniLibs {
                     dependencies {
+                        library "gnustl_shared"
+                        library "boost_system"
+                        library "boost_date_time"
+                        library "boost_python"
                         library "crypto"
                         library "ssl"
                         library "ffi"
                         library "sodium"
+                        library "torrent_rasterbar"
                         library "sqlite3"
                         library "gmp"
                     }
@@ -91,9 +96,37 @@ model {
     repositories {
         // Prebuilt with python-for-android toolchain
         libs(PrebuiltLibraries) {
+            gnustl_shared {
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("src/main/jniLibs/armeabi-v7a/libgnustl_shared.so")
+                }
+            }
+            boost_date_time {
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("src/main/jniLibs/armeabi-v7a/libboost_date_time.so")
+                }
+            }
+            boost_python {
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("src/main/jniLibs/armeabi-v7a/libboost_python.so")
+                }
+            }
+            boost_system {
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("src/main/jniLibs/armeabi-v7a/libboost_system.so")
+                }
+            }
             crypto {
                 binaries.withType(SharedLibraryBinary) {
                     sharedLibraryFile = file("src/main/jniLibs/armeabi-v7a/libcrypto1.0.2h.so")
+                }
+            }
+            torrent_rasterbar {
+                binaries.withType(SharedLibraryBinary) {
+                    // When the python bindings shared library and the native one have the same name
+                    // it causes a cyclic dependency reference on runtime, therefore the native
+                    // .so file was renamed to include _rasterbar
+                    sharedLibraryFile = file("src/main/jniLibs/armeabi-v7a/libtorrent_rasterbar.so")
                 }
             }
             ssl {

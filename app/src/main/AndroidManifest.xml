@@ -21,17 +21,17 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="dApp loader"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <service
             android:name=".service.IPV8Service"
-            android:label="IOM service"
+            android:label="IPV8 service"
             android:process=":service_Iomd" />
 
         <activity
             android:name=".MainActivity"
-            android:label="IPv8 Attestation App"
+            android:label="dApp loader"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>

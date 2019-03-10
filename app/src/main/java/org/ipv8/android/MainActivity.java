@@ -4,16 +4,31 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatDelegate;
 import android.text.TextUtils;
+import android.util.Log;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import org.ipv8.android.service.IPV8Service;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 
 public class MainActivity extends BaseActivity {
 
     public static final int WRITE_STORAGE_PERMISSION_REQUEST_CODE = 110;
+    public static final String URL = "http://127.0.0.1:9090/dapp/catalog";
+
+    private WebView webView;
 
     static {
         // Backwards compatibility for vector graphics
@@ -21,7 +36,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void shutdown() {
-        killService();
+        this.killService();
 
         try {
             Thread.sleep(1000);
@@ -33,7 +48,7 @@ public class MainActivity extends BaseActivity {
     }
 
     protected void startService() {
-        IPV8Service.start(this); // Run normally
+        IPV8Service.start(this);
     }
 
     protected void killService() {
@@ -74,5 +89,56 @@ public class MainActivity extends BaseActivity {
         } else {
             startService();
         }
+
+        this.webView = (WebView) findViewById(R.id.webview);
+
+        // Enable Javascript
+        WebSettings webSettings = this.webView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+
+        // Load GUI
+        this.webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                if (view != null){
+                    String htmlData ="<html><body><div align=\"center\" >Please wait while loading backend..</div></body>";
+                    view.loadDataWithBaseURL(null, htmlData, "text/html", "UTF-8", null);
+                }
+
+                final Handler handler = new Handler();
+                handler.postDelayed(() -> webView.loadUrl(URL), 1000);
+            }
+
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+                Log.d("dApp loader", "requesting: " + url);
+                return super.shouldInterceptRequest(view, url);
+            }
+        });
+        
+        if (savedInstanceState == null) {
+            webView.loadUrl(URL);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void onDestroy() {
+        this.shutdown();
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        this.webView.saveState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        this.webView.restoreState(savedInstanceState);
     }
 }
