@@ -26,7 +26,7 @@ import java.net.Socket;
 public class MainActivity extends BaseActivity {
 
     public static final int WRITE_STORAGE_PERMISSION_REQUEST_CODE = 110;
-    public static final String URL = "http://127.0.0.1:9090/dapp/catalog";
+    public static final String URL = "http://127.0.0.1:9090/gui";
 
     private WebView webView;
 
